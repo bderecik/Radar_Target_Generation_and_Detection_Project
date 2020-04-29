@@ -1,0 +1,36 @@
+Implementation steps for the 2D CFAR process
+
+Cell Under Test - Loop over elements of RDM array each iteration selecting one cell to be the CUT 
+    	for i = Tr+Gr+1 : (Nr/2)-(Gr+Tr)
+    	for j = Td+Gd+1 : Nd-(Gd+Td)
+
+For each iteration loop over the training cells "excluding the guarding cells" to sum their values
+        for k = i-(Tr+Gr) : i+(Tr+Gr)
+        for m = j-(Td+Gd) : j+(Td+Gd)
+
+Calculate the average of the noise value in the area around CUT
+        noise_lev = noise_lev + db2pow(RDM(k,m))
+
+Convert using pow2db
+        th = pow2db(noise_lev/(2*(Td+Gd+1)*2*(Tr+Gr+1)-(Gr*Gd)-1))
+
+Add the offset value
+
+Offset is added to the threshold to calculate the new threshold.
+Next, compare the signal under CUT against this threshold.
+
+    If the CUT is greater then the threshold replace it by 1, else 0
+
+Selection of Training, Guard cells and offset
+
+    Tr = 8, Td = 8 For both Range and Doppler Training Cells.
+    Gr = 12, Gd = 6 For both Range and Doppler Guard Cells.
+    offset = 2 the offset value.
+
+Steps taken to suppress the non-thresholded cells at the edges
+
+It is suppressed that edges are zero since cell under test are not located at the edges. So, cell values assigned as zero.
+
+RDM(union(1:(Tr+Gr),end-(Tr+Gr-1):end),:) = 0; % Rows
+RDM(:,union(1:(Td+Gd),end-(Td+Gd-1):end)) = 0; % Columns
+
